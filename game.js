@@ -43,15 +43,15 @@ const SCENES=[
   num: 'III', 
   en: 'GARDEN DESERT', 
   move: 'roll',
-  skyM: ['#38bdf8', '#bae6fd'], // Bright blue to soft sky blue gradient
-  skyC: ['#ff8fae', '#fef08a'], // Warm rose and sunny yellow horizon tint
+  skyM: ['#38bdf8', '#bae6fd'], 
+  skyC: ['#ff8fae', '#fef08a'], 
   ui: '#1c1917', 
-  uiBright: false,              // Dark UI text for maximum contrast on bright sky
+  uiBright: false,              
   fragNeed: 16, 
   speed: 30, 
   fogN: 20, 
-  fogF: 320,                    // Clearer fog distance for bright daytime visibility
-  accents: ['#e11d48', '#16a34a', '#fb923c'], // Rose red, leaf green, warm coral
+  fogF: 320,                   
+  accents: ['#e11d48', '#16a34a', '#fb923c'], 
   fragColor: '#e11d48', 
   trail: '#ff4d6d',
   root: 53, 
@@ -70,15 +70,15 @@ const SCENES=[
   num: 'V', 
   en: 'SPACE REACH', 
   move: 'fly',
-  skyM: ['#030712', '#0f172a'], // Deep cosmic black-blue gradient
-  skyC: ['#38bdf8', '#ff8fae'], // Celestial cyan and nebula pink horizon glow
+  skyM: ['#030712', '#0f172a'], 
+  skyC: ['#38bdf8', '#ff8fae'], 
   ui: '#f0f9ff', 
   uiBright: true,
   fragNeed: 16, 
   speed: 34, 
   fogN: 50, 
-  fogF: 400,                   // Deep space perspective
-  accents: ['#38bdf8', '#ff8fae', '#fef08a'], // Stellar blue, nebula rose, starlight gold
+  fogF: 400,                  
+  accents: ['#38bdf8', '#ff8fae', '#fef08a'], 
   fragColor: '#38bdf8', 
   trail: '#7dd3fc',
   root: 60, 
@@ -107,9 +107,7 @@ const SCENES=[
 }];
 const COLLAPSE_POEM='the dream forgets its depth';
 
-/* ------------------------------------------------------------
-   RENDERER / SCENE / CAMERA
------------------------------------------------------------- */
+
 const renderer = new THREE.WebGLRenderer({canvas:$('#gl'),antialias:true,alpha:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 renderer.setSize(innerWidth,innerHeight);
@@ -125,19 +123,17 @@ function doResize(){
 addEventListener('resize',doResize);
 addEventListener('orientationchange',()=>{setTimeout(doResize,260);});
 
-/* shared glow texture */
 const glowTex=(()=>{const c=document.createElement('canvas');c.width=c.height=64;
   const g=c.getContext('2d');const r=g.createRadialGradient(32,32,0,32,32,32);
   r.addColorStop(0,'rgba(255,255,255,1)');r.addColorStop(.4,'rgba(255,255,255,.45)');
   r.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=r;g.fillRect(0,0,64,64);
   const t=new THREE.CanvasTexture(c);return t;})();
 
-/* ------------------------------------------------------------
-   STATE
------------------------------------------------------------- */
+
+
 let sceneIdx=0, S=SCENES[0];
 let progress=0;
-let state='attract';             // attract | play | dissolve | end
+let state='attract';          
 let speed=24, time=0, dreamTime=0;
 let worldGroup=null;
 let movers=[], updaters=[], colorables=[], fadables=[], frags=[], bursts=[];
@@ -149,9 +145,7 @@ let collapse={t:0,target:0,hold:0};
 let boostActive=false, boostT=0;
 let runPhase=0;
 
-/* ------------------------------------------------------------
-   AUDIO — generative ambient engine
------------------------------------------------------------- */
+
 const AU={ctx:null,master:null,pad:[],filter:null,delay:null,muted:false,noise:null};
 const m2f=m=>440*Math.pow(2,(m-69)/12);
 function audioInit(){
@@ -239,9 +233,7 @@ function collapseSound(down){
   o.connect(g);g.connect(AU.delaySend);o.start();o.stop(ctx.currentTime+1.1);
 }
 
-/* ------------------------------------------------------------
-   COLOR SYSTEM — the world wakes up as you collect memories
------------------------------------------------------------- */
+
 function tint(mat, targetHex, monoHex){
   colorables.push({mat,target:C(targetHex),mono:monoHex?C(monoHex):grayOf(targetHex)});
 }
@@ -261,9 +253,7 @@ function grayLerp(a,b,p){
   return '#'+ca.getHexString();
 }
 
-/* ------------------------------------------------------------
-   WORLD BUILDING HELPERS
------------------------------------------------------------- */
+
 function lineMat(hex,op=1){return new THREE.LineBasicMaterial({color:hex,transparent:op<1,opacity:op});}
 function edges(geo,mat){return new THREE.LineSegments(new THREE.EdgesGeometry(geo),mat);}
 function mover(o,span,onRecycle){movers.push({o,span,onRecycle});}
@@ -284,7 +274,6 @@ function clearWorld(){
   worldGroup=new THREE.Group();scene.add(worldGroup);
 }
 
-/* road shared by ground-based dreams */
 function buildRoad(opt){
   const o=Object.assign({w:12,fill:'#e3e1da',fillC:'#efdcc2',line:'#26241f',lineC:null,
     dash:'#26241f',dashC:null,glowEdges:false},opt||{});
@@ -317,16 +306,13 @@ function buildRoad(opt){
   worldGroup.add(g);
 }
 
-/* ------------------------------------------------------------
-   THE BALL — built once, restyled and animated per dream
------------------------------------------------------------- */
+
 let runner, bodyMat, trailMat, glowL, ballMesh, ballInner;
 
 function buildBall(){
   runner=new THREE.Group();
   bodyMat=lineMat('#26241f');
   
-  // Wireframe outer sphere and geometric inner core for visible rotation
   const ballRadius = 0.55;
   const outerGeo = new THREE.IcosahedronGeometry(ballRadius, 2);
   ballMesh = edges(outerGeo, bodyMat);
@@ -336,7 +322,6 @@ function buildBall(){
   ballInner = edges(innerGeo, bodyMat);
   ballMesh.add(ballInner);
 
-  // Aura glows surrounding the ball
   glowL=glowSprite('#ff5555', 1.8, 0); runner.add(glowL);
   glowR=glowSprite('#ff5555', 1.2, 0); runner.add(glowR);
 
@@ -356,28 +341,23 @@ function styleRunner(){
 }
 function animateStickman(d,mode){
   const radius = 0.55;
-  // Calculate forward pitch rotation based on travel speed
   const rotDelta = (speed * d) / radius;
   ballMesh.rotation.x += rotDelta;
   
-  // Counter-rotate or spin inner core for a dynamic crystalline look
   ballInner.rotation.y += d * 2.5;
   ballInner.rotation.z += d * 1.5;
 
   if(mode==='swim'){
-    // Floating and gently bobbing in water
     const bob = Math.sin(time * 3.5) * 0.12;
     runner.position.y = 0.55 + bob;
     glowL.position.set(0, 0, 0);
     glowR.position.set(0, 0, 0);
   } else if(mode==='fly'){
-    // Hovering freely with rhythmic pulsing
     const hover = Math.sin(time * 4) * 0.25 + 0.4;
     runner.position.y = 1.2 + hover;
     glowL.position.set(0, 0, 0);
     glowR.position.set(0, 0, 0);
   } else {
-    // Grounded rolling on road with slight compression bounce
     const bounce = Math.abs(Math.sin(time * 12)) * 0.04;
     runner.position.y = radius + bounce;
     glowL.position.set(0, 0, 0);
@@ -461,7 +441,6 @@ function buildRain(){
 let dunePhase = 0;
 
 function buildDesert() {
-  // Bright sand road with rich magenta-pink accents
   buildRoad({
     w: 11,
     fill: '#f5e6ca',
@@ -472,11 +451,10 @@ function buildDesert() {
     dashC: '#fb923c'
   });
 
-  // Dynamic Dune Terrain - Sunlit Sand/Flora Grid
   const seg = 64;
   const dg = new THREE.PlaneGeometry(560, 560, seg, seg);
   const dm = new THREE.MeshBasicMaterial({
-    color: '#84cc16', // Vibrant leaf-green wireframe ground
+    color: '#84cc16', 
     wireframe: true,
     transparent: true,
     opacity: 0.45
@@ -505,7 +483,6 @@ function buildDesert() {
     dg.attributes.position.needsUpdate = true;
   });
 
-  // Bright Desert Sun
   const sunM = new THREE.MeshBasicMaterial({
     color: '#fff7ed',
     fog: false,
@@ -523,7 +500,6 @@ function buildDesert() {
   sunGlow.position.copy(sun.position);
   worldGroup.add(sunGlow);
 
-  // Blooming Rose-Desert Flora (Replaces standard cacti)
   const cm = lineMat('#16a34a');
   tint(cm, '#e11d48', '#16a34a');
 
@@ -532,16 +508,13 @@ function buildDesert() {
       const g = new THREE.Group();
       const h = rand(2.5, 5.0);
 
-      // Main Stem
       g.add(edges(new THREE.CylinderGeometry(0.2, 0.3, h, 6), cm).translateY(h / 2));
 
-      // Side Branches / Leaves
       const arm = edges(new THREE.CylinderGeometry(0.12, 0.16, h * 0.45, 6), cm);
       arm.position.set(0.5 * side, h * 0.55, 0);
       arm.rotation.z = side * 0.6;
       g.add(arm);
 
-      // Blooming Flower Head Accent
       const flowerHead = edges(new THREE.IcosahedronGeometry(0.6, 0), cm);
       flowerHead.position.set(0, h + 0.3, 0);
       g.add(flowerHead);
@@ -552,7 +525,6 @@ function buildDesert() {
     }
   }
 
-  // Floating Pollen / Petal Particles
   const n = 120;
   const pgd = new THREE.BufferGeometry();
   const pp = new Float32Array(n * 3);
@@ -584,7 +556,6 @@ function buildDesert() {
     pgd.attributes.position.needsUpdate = true;
   });
 
-  // Animated Soaring Birds
   const birdCount = 14;
   const birdGeo = new THREE.BufferGeometry();
   const birdPositions = new Float32Array(birdCount * 3);
@@ -616,10 +587,9 @@ function buildDesert() {
     const pos = birdGeo.attributes.position.array;
     for (let i = 0; i < birdCount; i++) {
       const o = birdOffsets[i];
-      pos[i * 3] += o.speedX;                           // Flying across sky
-      pos[i * 3 + 1] += Math.sin(time * 2 + o.phase) * o.speedY; // Gentle flapping motion
+      pos[i * 3] += o.speedX;                          
+      pos[i * 3 + 1] += Math.sin(time * 2 + o.phase) * o.speedY; 
       
-      // Loop birds back around when they fly out of view
       if (pos[i * 3] > 70) pos[i * 3] = -70;
     }
     birdGeo.attributes.position.needsUpdate = true;
@@ -678,7 +648,6 @@ function buildSea(){
 
 /* ---------------- DREAM V · space reach (fly) ---------------- */
 function buildSky() {
-  // 1. Celestial Sun / Glowing Star Core
   const sunM = new THREE.MeshBasicMaterial({ color: '#fffbeb', fog: false, transparent: true, opacity: 0 });
   fade(sunM, 0.95);
   const sun = new THREE.Mesh(new THREE.CircleGeometry(22, 48), sunM);
@@ -690,7 +659,6 @@ function buildSky() {
   halo.position.copy(sun.position);
   worldGroup.add(halo);
 
-  // 2. Soft Realistic Particle Cloud Generator (No Hexagons / Wireframes)
   const cloudCanvas = document.createElement('canvas');
   cloudCanvas.width = 128;
   cloudCanvas.height = 128;
@@ -705,7 +673,6 @@ function buildSky() {
 
   const cloudTexture = new THREE.CanvasTexture(cloudCanvas);
 
-  // Generate Volumetric Soft Cloud Clusters
   const cloudGroup = new THREE.Group();
   const cloudCount = 18;
 
@@ -740,7 +707,6 @@ function buildSky() {
     });
   }
 
-  // 3. Deep Space Starfield Particles
   const starCount = 200;
   const starGeo = new THREE.BufferGeometry();
   const starPositions = new Float32Array(starCount * 3);
@@ -765,13 +731,12 @@ function buildSky() {
   updaters.push(d => {
     const pos = starGeo.attributes.position.array;
     for (let i = 0; i < starCount; i++) {
-      pos[i * 3 + 2] += speed * d * 0.2; // Slow ambient cosmic drift
+      pos[i * 3 + 2] += speed * d * 0.2; 
       if (pos[i * 3 + 2] > 10) pos[i * 3 + 2] -= 310;
     }
     starGeo.attributes.position.needsUpdate = true;
   });
 
-  // 4. Soaring Space Birds / Cosmic Rays
   const bm = lineMat('#38bdf8');
   tint(bm, '#ff8fae', '#38bdf8');
   const birds = [];
@@ -799,7 +764,7 @@ function buildSky() {
     });
   });
 
-  // 5. High-Speed Space Wind / Starlight Streak Lines
+ 
   const wn = 80;
   const wg = new THREE.BufferGeometry();
   const wp = new Float32Array(wn * 6);
@@ -829,7 +794,7 @@ function buildSky() {
       a[i * 6 + 2] = w.z;
       a[i * 6 + 3] = w.x;
       a[i * 6 + 4] = w.y;
-      a[i * 6 + 5] = w.z - 4; // Longer motion blur streaks for speed
+      a[i * 6 + 5] = w.z - 4; 
     }
     wg.attributes.position.needsUpdate = true;
   });
@@ -861,9 +826,7 @@ function buildWhite(){
 
 const BUILDERS={paper:buildPaper,rain:buildRain,desert:buildDesert,sea:buildSea,sky:buildSky,white:buildWhite};
 
-/* ------------------------------------------------------------
-   MEMORY FRAGMENTS
------------------------------------------------------------- */
+
 function spawnFragment(){
   const g=new THREE.Group();
   const mat=lineMat(S.uiBright?'#ffffff':'#26241f');
@@ -923,9 +886,6 @@ function updateFrags(d){
   }
 }
 
-/* ------------------------------------------------------------
-   POETRY & UI
------------------------------------------------------------- */
 let poemTimer=null;
 function showPoem(text,dur=5200){
   const el=$('#poem');
@@ -958,9 +918,7 @@ function setUI(){
   $('#meterFill').style.background=`linear-gradient(90deg,${S.accents.join(',')})`;
 }
 
-/* ------------------------------------------------------------
-   2D COLLAPSE — the dream forgets its depth
------------------------------------------------------------- */
+
 function triggerCollapse(){
   if(collapse.target===1)return;
   collapse.target=1;collapse.hold=3.4;
