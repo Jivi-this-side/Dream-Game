@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>ROCK & ROLL</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="vignette"></div>
+<canvas id="grain"></canvas>
+<div id="flash"></div>
+
+<div class="hud" id="sceneTag"><span class="num">I</span><span class="en">START</span><span class="mode">roll</span></div>
+<div class="hud" id="fragTag">00 / 14</div>
+<div class="hud" id="mute">SOUND · ON</div>
+<div class="hud" id="recenter">recenter</div>
+<div class="hud" id="boostHint">two fingers / hold space · boost</div>
+
+<div class="hud" id="meterWrap">
+  <div id="meterBar"><div id="meter"></div><div id="meterFill"></div></div>
+  <div id="meterLabel">COLOR · 0%</div>
+</div>
+
+<div id="poem"><div class="en"></div></div>
+<div id="word"></div>
+
+<div id="card"><div class="num">II</div><div class="name">BARISH</div><div class="mode">roll</div><div class="rule"></div></div>
+
+<div id="start">
+  <div class="kicker">a run through six dreams</div>
+  <h1>The Road Dreams</h1>
+  <div class="rule"></div>
+  <div class="hint">Left / Right  &nbsp;OR A/D <br>collect the light · color the dream</div>
+  <div class="levels">rock · roll · run · fly </div>
+  <div class="modeToggle" id="modeToggle">
+    <div class="modeBtn active" id="modeTouch">touch steer</div>
+    <div class="modeBtn" id="modeTilt">tilt steer</div>
+  </div>
+  <div id="modeNote">swipe the lanes, two fingers to boost</div>
+  <div class="begin">press anywhere to dream</div>
+</div>
+
+<div id="end">
+  <div class="big">the dream remembers you</div>
+  <div class="stats" id="endStats"></div>
+  <div class="again" id="again">dream again</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
